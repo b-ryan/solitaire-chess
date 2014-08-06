@@ -112,18 +112,49 @@
           moves
           (valid-moves board from-pos)))
 
+(defn all-games-from-pos
+  [board from-pos]
+  (for [to-pos (valid-moves board from-pos)]
+    (let [new-board (move-piece board from-pos to-pos)
+          move {:move [from-pos to-pos]
+                :board new-board}]
+      (prn "*****")
+      (prn (all-games new-board))
+      (map #(into [move] %)
+           (all-games new-board))
+      )))
+
+(defn all-games-from-pos
+  [board current-path from-pos]
+  (for [to-pos ])
+
+
+
+  (let [to-positions (valid-moves board from-pos)
+        y (map (fn [to-pos]
+                 (let [new-board (move-piece board from-pos to-pos)
+                       new-path (merge current-path {:move [from-pos to-pos]
+                                                     :board new-board})]
+                   (all-games new-board new-path)
+                   ))
+               to-positions)]
+    (prn "****")
+    (pprint y)
+    y
+    ))
+
 (defn all-games
-  ([board] (all-games board []))
-  ([board moves]
-   (reduce (fn [ret from-pos]
-             (all-games-from-pos board ret from-pos))
-           moves
-           (keys board))))
+  [board current-path]
+  (let [sub-paths (map (partial all-games-from-pos board current-path)
+                       (keys board))]
+    (reduce #(apply merge % %2) current-path sub-paths)))
 
 (pprint
-  (all-games {[1 2] :king
-              [2 2] :queen
-              [3 3] :knight}))
+  (all-games {[1 1] :king
+              [1 2] :pawn
+              [1 3] :pawn
+              [1 4] :pawn}
+             []))
 
 (defn winning-games
   [board]
