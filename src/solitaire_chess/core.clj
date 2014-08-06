@@ -1,5 +1,6 @@
 (ns solitaire-chess.core
-  (:require [clojure.edn :as edn]))
+  (:require [clojure.edn :as edn]
+            [clojure.pprint :refer [pprint]]))
 
 (defn load-board [file]
   (edn/read-string (slurp file)))
@@ -102,25 +103,32 @@
 (declare all-games)
 
 (defn all-games-from-pos
-  [game from-pos]
+  [board moves from-pos]
   (reduce (fn [ret to-pos]
-            (let [new-board (move-piece (:board ret) from-pos to-pos)
-                  new-moves (merge (:moves ret) [from-pos to-pos])]
-              (all-games {:board new-board
-                          :moves new-moves})))
-          game
-          (valid-moves (:board game) from-pos)))
+            (let [new-board (move-piece board from-pos to-pos)]
+              (all-games new-board
+                         (merge ret {:move [from-pos to-pos]
+                                     :board new-board }))))
+          moves
+          (valid-moves board from-pos)))
 
 (defn all-games
-  [game]
-  (reduce (fn [ret from-pos]
-            (all-games-from-pos ret from-pos))
-          game
-          (keys (:board game))))
+  ([board] (all-games board []))
+  ([board moves]
+   (reduce (fn [ret from-pos]
+             (all-games-from-pos board ret from-pos))
+           moves
+           (keys board))))
 
-(all-games {:board {[1 2] :king
-                    [2 2] :queen}
-            :moves []})
+(pprint
+  (all-games {[1 2] :king
+              [2 2] :queen
+              [3 3] :knight}))
+
+(defn winning-games
+  [board]
+  (filter #(= 1 (count (:board %)))
+          (all-games board)))
 
 (defn -main
   "I don't do a whole lot ... yet."
