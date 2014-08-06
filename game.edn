@@ -1,9 +1,0 @@
-; board keys are pairs of [column row]
-; where column: a -> 1, b -> 2, etc.
-{:board {[1 1] :bishop
-         [1 3] :rook
-         [2 2] :bishop
-         [3 1] :pawn
-         [4 2] :rook
-         [4 4] :pawn}
- :moves []}
