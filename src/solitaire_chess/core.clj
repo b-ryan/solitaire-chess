@@ -85,15 +85,51 @@
                  ))
           moves))
 
-(defn remove-non-captures [board moves]
+(defn remove-non-captures [moves board]
   (filter #(get board %)
           moves))
 
+(defmulti remove-intersections (fn [moves board pos piece] piece))
+(defmethod remove-intersections :default moves [moves board pos piece] moves)
+
+(defn step [x y] (if (<= x y) 1 -1))
+
+(defn in-between [x y]
+  (let [s (step x y)]
+    (range (+ x s) y s)))
+
+(defmethod remove-intersections :bishop
+  [moves board [pcol prow] _]
+  (filter (fn [[mcol mrow]]
+            (every? nil?
+                  (for [c (in-between pcol mcol)
+                        r (in-between prow mrow)]
+                    (get board [c r]))))
+          moves))
+
+(defmethod remove-intersections :rook
+  [moves board [pcol prow] _]
+  (filter (fn [[mcol mrow]]
+            (every? nil?
+                    (if (= pcol mcol)
+                      (for [r (in-between prow mrow)]
+                        (get board [pcol r]))
+                      (for [c (in-between pcol mcol)]
+                        (get board [c prow])))))
+          moves))
+
+(defmethod remove-intersections :queen
+  [moves board pos _]
+  (-> moves
+      (remove-intersections board pos :bishop)
+      (remove-intersections board pos :rook)))
+
 (defn valid-moves [board pos]
-  (->> (all-moves board pos (get board pos))
-       remove-nil
-       remove-out-of-bounds
-       (remove-non-captures board)))
+  (-> (all-moves board pos (get board pos))
+      remove-nil
+      remove-out-of-bounds
+      (remove-non-captures board)
+      (remove-intersections board pos (get board pos))))
 
 (defn move-piece [board from-pos to-pos]
   (-> board
@@ -163,13 +199,7 @@
           (do (prn) (prn "OR") (prn)
             (recur remaining)))))))
 
-;(let [board {[1 2] :king
-;             [2 2] :queen
-;             [3 3] :knight}]
-;  (solve board))
-
 (defn -main
   [& args]
   (let [board (load-board "board.edn")]
     (solve board)))
-(-main)
