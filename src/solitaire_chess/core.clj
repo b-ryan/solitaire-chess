@@ -123,18 +123,50 @@
            (let [sub-paths (all-games (:board move))]
              (if (seq sub-paths)
                (prepend-all move sub-paths)
-               [[move]])
-             )
-           )))
+               [[move]])))))
 
-(pprint (all-games {[1 1] :king
-                    [1 2] :pawn
-                    [1 3] :pawn
-                    [1 4] :pawn}))
+(defn winning-games
+  [board]
+  (filter #(= 1 (-> % last :board count))
+          (all-games board)))
 
-(pprint (all-games {[1 2] :king
-                    [2 2] :queen
-                    [3 3] :knight}))
+(defn pos->str
+  [[col row]]
+  (str (get {1 "a"
+             2 "b"
+             3 "c"
+             4 "d"} col)
+       row))
+
+(defn print-game
+  [board moves]
+  (loop [board board
+         moves moves]
+    (if (seq moves)
+      (let [move (first moves)
+            from-pos (first (:move move))
+            to-pos (second (:move move))
+            piece (get board from-pos)]
+        (prn (str "Move " (name piece)
+                  " from " (pos->str from-pos)
+                  " to " (pos->str to-pos)))
+        (recur (:board move)
+               (rest moves))))
+    ))
+
+;(pprint (all-games {[1 1] :king
+;                    [1 2] :pawn
+;                    [1 3] :pawn
+;                    [1 4] :pawn}))
+;
+;(pprint (all-games {[1 2] :king
+;                    [2 2] :queen
+;                    [3 3] :knight}))
+
+(let [board {[1 2] :king
+             [2 2] :queen
+             [3 3] :knight}]
+  (print-game board (first (winning-games board))))
 
 (defn -main
   "I don't do a whole lot ... yet."
