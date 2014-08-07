@@ -23,9 +23,9 @@
       (print " "))
     (prn)))
 
-(defmulti all-moves (fn [piece pos] piece))
+(defmulti all-moves (fn [board pos piece] piece))
 
-(defmethod all-moves :rook [_ [col row]]
+(defmethod all-moves :rook [board [col row] _]
   (reduce (fn [moves x]
             (merge moves
                    (if (not (= col x)) [x row])
@@ -33,14 +33,14 @@
           []
           (range 1 5)))
 
-(defmethod all-moves :pawn [_ [col row]]
+(defmethod all-moves :pawn [board [col row] _]
   (let [prev-col (- col 1)
         next-col (+ col 1)
         next-row (+ row 1)]
     [[prev-col next-row]
      [next-col next-row]]))
 
-(defmethod all-moves :bishop [_ [col row]]
+(defmethod all-moves :bishop [board [col row] _]
   (reduce (fn [moves x]
             (if (not (= x 0))
               (merge moves
@@ -50,7 +50,7 @@
           []
           (range -3 4)))
 
-(defmethod all-moves :knight [_ [col row]]
+(defmethod all-moves :knight [board [col row] _]
   [[(+ col 2) (+ row 1)]
    [(+ col 2) (- row 1)]
    [(- col 2) (+ row 1)]
@@ -60,12 +60,12 @@
    [(- col 1) (+ row 2)]
    [(- col 1) (- row 2)]])
 
-(defmethod all-moves :queen [_ pos]
+(defmethod all-moves :queen [board pos _]
   (apply merge
-         (all-moves :rook pos)
-         (all-moves :bishop pos)))
+         (all-moves board pos :rook)
+         (all-moves board pos :bishop)))
 
-(defmethod all-moves :king [_ [col row]]
+(defmethod all-moves :king [board [col row] _]
   (for [x [-1 0 1]
         y [-1 0 1]
         :when (not (and (= x 0) (= y 0)))]
@@ -89,16 +89,8 @@
   (filter #(get board %)
           moves))
 
-;(defn remove-intersections [board pos moves]
-;  )
-;
-;(remove-intersections {[1 1] :bishop
-;                       [2 2] :pawn
-;                       [3 3] :pawn}
-;                      )
-
 (defn valid-moves [board pos]
-  (->> (all-moves (get board pos) pos)
+  (->> (all-moves board pos (get board pos))
        remove-nil
        remove-out-of-bounds
        (remove-non-captures board)))
