@@ -151,22 +151,19 @@
                   " from " (pos->str from-pos)
                   " to " (pos->str to-pos)))
         (recur (:board move)
-               (rest moves))))
-    ))
-
-;(pprint (all-games {[1 1] :king
-;                    [1 2] :pawn
-;                    [1 3] :pawn
-;                    [1 4] :pawn}))
-;
-;(pprint (all-games {[1 2] :king
-;                    [2 2] :queen
-;                    [3 3] :knight}))
+               (rest moves))))))
 
 (let [board {[1 2] :king
              [2 2] :queen
              [3 3] :knight}]
-  (print-game board (first (winning-games board))))
+  (loop [games (winning-games board)]
+    (if (seq games)
+      (let [game (first games)
+            remaining (rest games)]
+        (print-game board game)
+        (if (seq remaining)
+          (do (prn) (prn "OR") (prn)
+            (recur remaining)))))))
 
 (defn -main
   "I don't do a whole lot ... yet."
