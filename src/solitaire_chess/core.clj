@@ -51,14 +51,14 @@
           (range -3 4)))
 
 (defmethod all-moves :knight [_ [col row]]
-  [[(+ col 3) (+ row 2)]
-   [(+ col 3) (- row 2)]
-   [(- col 3) (+ row 2)]
-   [(- col 3) (- row 2)]
-   [(+ col 2) (+ row 3)]
-   [(+ col 2) (- row 3)]
-   [(- col 2) (+ row 3)]
-   [(- col 2) (- row 3)]])
+  [[(+ col 2) (+ row 1)]
+   [(+ col 2) (- row 1)]
+   [(- col 2) (+ row 1)]
+   [(- col 2) (- row 1)]
+   [(+ col 1) (+ row 2)]
+   [(+ col 1) (- row 2)]
+   [(- col 1) (+ row 2)]
+   [(- col 1) (- row 2)]])
 
 (defmethod all-moves :queen [_ pos]
   (apply merge
@@ -100,55 +100,41 @@
       (assoc to-pos (get board from-pos))
       (dissoc from-pos)))
 
-(defn all-games
+(defn possible-moves
   [board]
-  (map (fn [from-pos]
-         (map (fn [to-pos]
-                {:move [from-pos to-pos]
-                 :board (move-piece board from-pos to-pos)})
-              (valid-moves board from-pos)))
-       (keys board))
-  )
+  (apply concat
+         (for [from-pos (keys board)]
+           (reduce (fn [ret to-pos]
+                     (merge ret {:move [from-pos to-pos]
+                                 :board (move-piece board from-pos to-pos)}))
+                   []
+                   (valid-moves board from-pos)))))
+
+
+(defn prepend-all
+  [pre all]
+  (map #(cons pre %)
+       all))
 
 (defn all-games
   [board]
-  (loop [paths []
-         from-positions (keys board)]
-    (if (seq from-positions)
-      (let [from-pos (first from-positions)]
-        (recur
-          (reduce #(apply merge % %2)
-                  paths
-                  (loop [sub-paths []
-                         to-positions (valid-moves board from-pos)]
-                    (if (seq to-positions)
-                      (let [to-pos (first to-positions)
-                            new-board (move-piece board from-pos to-pos)
-                            move {:move [from-pos to-pos]
-                                  :board new-board}]
-                        (recur
-                          (reduce #(apply merge % %2)
-                                  [move]
-                                  (all-games new-board))
-                          (rest to-positions)
-                          ))
-                      sub-paths))
-                  )
-             (rest from-positions)))
-      paths))
-  )
+  (apply concat
+         (for [move (possible-moves board)]
+           (let [sub-paths (all-games (:board move))]
+             (if (seq sub-paths)
+               (prepend-all move sub-paths)
+               [[move]])
+             )
+           )))
 
-(pprint
-  (all-games {[1 1] :king
-              [1 2] :pawn
-              [1 3] :pawn
-              [1 4] :pawn}
-             ))
+(pprint (all-games {[1 1] :king
+                    [1 2] :pawn
+                    [1 3] :pawn
+                    [1 4] :pawn}))
 
-(defn winning-games
-  [board]
-  (filter #(= 1 (count (:board %)))
-          (all-games board)))
+(pprint (all-games {[1 2] :king
+                    [2 2] :queen
+                    [3 3] :knight}))
 
 (defn -main
   "I don't do a whole lot ... yet."
