@@ -71,16 +71,12 @@
         :when (not (and (= x 0) (= y 0)))]
     [(+ col x) (+ row y)]))
 
-(defn remove-non-captures [board moves]
-  (filter #(get board %)
-          moves))
-
 (defn remove-nil [moves]
   (filter (fn [pos]
             (not (nil? pos)))
           moves))
 
-(defn remove-invalid [moves]
+(defn remove-out-of-bounds [moves]
   (filter (fn [[col row]]
             (and (>= col 1)
                  (<= col 4)
@@ -89,10 +85,22 @@
                  ))
           moves))
 
+(defn remove-non-captures [board moves]
+  (filter #(get board %)
+          moves))
+
+;(defn remove-intersections [board pos moves]
+;  )
+;
+;(remove-intersections {[1 1] :bishop
+;                       [2 2] :pawn
+;                       [3 3] :pawn}
+;                      )
+
 (defn valid-moves [board pos]
   (->> (all-moves (get board pos) pos)
        remove-nil
-       remove-invalid
+       remove-out-of-bounds
        (remove-non-captures board)))
 
 (defn move-piece [board from-pos to-pos]
@@ -152,10 +160,8 @@
                   " to " (pos->str to-pos)))
         (recur (:board move)
                (rest moves))))))
-
-(let [board {[1 2] :king
-             [2 2] :queen
-             [3 3] :knight}]
+(defn solve
+  [board]
   (loop [games (winning-games board)]
     (if (seq games)
       (let [game (first games)
@@ -165,7 +171,13 @@
           (do (prn) (prn "OR") (prn)
             (recur remaining)))))))
 
+;(let [board {[1 2] :king
+;             [2 2] :queen
+;             [3 3] :knight}]
+;  (solve board))
+
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  )
+  (let [board (load-board "board.edn")]
+    (solve board)))
+(-main)
