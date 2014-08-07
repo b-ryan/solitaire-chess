@@ -32,11 +32,28 @@
 ; [4 3] :rook
 ; [4 4] :bishop}
 ;
-{[1 1] :rook
- [1 3] :bishop
- [1 4] :knight
- [2 1] :rook
- [2 3] :pawn
- [3 1] :pawn
- [4 2] :knight
- [4 3] :bishop}
+;{[1 1] :rook
+; [1 3] :bishop
+; [1 4] :knight
+; [2 1] :rook
+; [2 3] :pawn
+; [3 1] :pawn
+; [4 2] :knight
+; [4 3] :bishop}
+;
+;{:a1 :pawn
+; :b1 :knight
+; :b2 :rook
+; :b3 :bishop
+; :b4 :bishop
+; :c3 :pawn
+; :c4 :knight}
+;
+{:a1 :pawn
+ :a3 :bishop
+ :b1 :bishop
+ :b2 :rook
+ :b3 :king
+ :c1 :pawn
+ :c3 :knight
+ :d4 :rook}

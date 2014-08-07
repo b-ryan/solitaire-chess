@@ -2,8 +2,25 @@
   (:require [clojure.edn :as edn]
             [clojure.pprint :refer [pprint]]))
 
+(defn convert-key [k]
+  (let [s (name k)]
+    [(-> s first str {"a" 1
+                      "b" 2
+                      "c" 3
+                      "d" 4})
+     (-> s second str Integer/parseInt)]))
+
+(defn convert-keys [board]
+  (into {} (for [[k v] board]
+             [(convert-key k) v])))
+
 (defn load-board [file]
-  (edn/read-string (slurp file)))
+  (-> file
+      slurp
+      edn/read-string
+      convert-keys))
+
+(load-board "board.edn")
 
 (defn piece-symbol [piece]
   (case piece
